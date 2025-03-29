@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/learningpath/db" VERSION="20130712" COMMENT="XMLDB file for Moodle local/learningpath"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <!-- Learning Path Table -->
+    <TABLE NAME="local_learningpath" COMMENT="Table for storing learning paths">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="type_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="credit" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="enableselfenrollment" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0"/>
+        <FIELD NAME="published" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="false"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idx_type_id" UNIQUE="false" FIELDS="type_id"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Learning Path Lines Table -->
+    <TABLE NAME="local_learningpath_lines" COMMENT="Stores courses linked to a learning path">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="lpt_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="course_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="catalogue_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="module_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0"/>
+        <FIELD NAME="required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="assignee_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idx_lpt_id" UNIQUE="false" FIELDS="lpt_id"/>
+        <INDEX NAME="idx_course_id" UNIQUE="false" FIELDS="course_id"/>
+        <INDEX NAME="idx_catalogue_id" UNIQUE="false" FIELDS="catalogue_id"/>
+        <INDEX NAME="idx_module_id" UNIQUE="false" FIELDS="module_id"/>
+        <INDEX NAME="idx_assignee_id" UNIQUE="false" FIELDS="assignee_id"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Learning Path Users Table -->
+    <TABLE NAME="local_learningpath_users" COMMENT="Tracks users assigned to learning paths">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="u_id" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="lpt_id" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="assignee_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idx_lpt_id" UNIQUE="false" FIELDS="lpt_id"/>
+        <INDEX NAME="idx_u_id" UNIQUE="false" FIELDS="u_id"/>
+        <INDEX NAME="idx_assignee_id" UNIQUE="false" FIELDS="assignee_id"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Learning Path Cohorts Table -->
+    <TABLE NAME="local_learningpath_cohorts" COMMENT="Tracks cohorts assigned to learning paths">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="cohort_id" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="lpt_id" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="assignee_id" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idx_cohort_id" UNIQUE="false" FIELDS="cohort_id"/>
+        <INDEX NAME="idx_lpt_id" UNIQUE="false" FIELDS="lpt_id"/>
+        <INDEX NAME="idx_assignee_id" UNIQUE="false" FIELDS="assignee_id"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- Learning Path Notifications Table -->
+    <TABLE NAME="local_learningpath_notifications" COMMENT="Handles notifications for learning paths">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="lpt_id" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="enrollment_enable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="enrollment_mail_templates" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="expiration_enable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="expiration_mail_templates" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="enrollment_reminder_enable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="day_after_enrollment" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0"/>
+        <FIELD NAME="enrollment_reminder_mail_templates" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="expiration_reminder_enable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="day_before_expiration" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0"/>
+        <FIELD NAME="expiration_reminder_mail_templates" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="day_frequency_enable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="day_frequency" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0"/>
+        <FIELD NAME="day_frequency_mail_templates" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="completion_path_enable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="completion_path_mail_templates" TYPE="text" NOTNULL="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idx_lpt_id" UNIQUE="false" FIELDS="lpt_id"/>
+      </INDEXES>
+    </TABLE>
+
+  </TABLES>
+</XMLDB>

@@ -1,0 +1,42 @@
+<div class="container-fluid py-4">
+    <!-- Back button and title -->
+    <div class="d-flex align-items-center mb-3">
+        <a href="{{backurl}}" class="btn btn-primary mr-3">
+            <span>&larr;</span>
+        </a>
+        <div>
+            <h4 class="mb-0">{{name}}</h4>
+            <small class="text-muted">{{#str}} learning_path, local_learningpath {{/str}}</small>
+        </div>
+    </div>
+
+    <!-- Navigation tabs -->
+    <ul class="nav nav-tabs mb-4" id="learningpath-tabs" role="tablist">
+        {{#tabs}}
+            <li class="nav-item">
+                <a class="nav-link {{#active}}active{{/active}}" id="{{label}}-tab" data-toggle="tab" href="#{{label}}" role="tab" aria-controls="{{label}}" aria-selected="{{active}}">
+                    {{label}}
+                </a>
+            </li>
+        {{/tabs}}
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="learningpath-tab-content">
+        <div class="tab-pane fade {{#tabs}}{{#active}}show active{{/active}}{{/tabs}}" id="Overview" role="tabpanel" aria-labelledby="Overview-tab">
+            {{{overview_content}}}
+        </div>
+        <div class="tab-pane fade" id="Lines" role="tabpanel" aria-labelledby="Lines-tab">
+            {{{lines_content}}}
+        </div>
+        <div class="tab-pane fade" id="Users" role="tabpanel" aria-labelledby="Users-tab">
+            {{{users_content}}}
+        </div>
+        <div class="tab-pane fade" id="Cohorts" role="tabpanel" aria-labelledby="Cohorts-tab">
+            {{{cohorts_content}}}
+        </div>
+        <div class="tab-pane fade" id="Notifications" role="tabpanel" aria-labelledby="Notifications-tab">
+            {{{notifications_content}}}
+        </div>
+    </div>
+</div>

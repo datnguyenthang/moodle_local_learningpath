@@ -1,0 +1,20 @@
+<div class="container mt-4" id="{{notification_id}}">
+    {{{ notification_form_html }}}
+</div>
+
+{{#js}}
+    require(['core_form/dynamicform', 'core/str', 'core/toast'], function(DynamicForm, {getString}, {add: addToast}) {
+        const form = new DynamicForm(document.querySelector('#{{notification_id}}'), 'local_learningpath\\form\\notification_form');
+
+        form.addEventListener(form.events.FORM_SUBMITTED, (e) => {
+            e.preventDefault();
+            //const response = e.detail;console.log(response);
+            //form.load();
+            getString('changessaved', 'moodle').then(addToast).catch(null);
+        });
+
+        form.addEventListener(form.events.CANCEL_BUTTON_PRESSED, () => {
+            window.location.reload();
+        });
+    });
+{{/js}}

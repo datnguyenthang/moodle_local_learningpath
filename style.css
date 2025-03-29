@@ -1,0 +1,30 @@
+.category_learningpath {
+    max-height: 450px;
+    min-width: 450px;
+    max-width: 450px;
+    width: max-content;
+    overflow-y: auto;
+}
+
+.custom-control-input:checked~.custom-control-label::before {
+    color: #fff;
+    border-color: green;
+    background-color: green;
+}
+
+#courses-list-modal table tbody {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+}
+
+#courses-list-modal table thead,
+#courses-list-modal table tbody tr {
+    display: table;
+    width: 100%;
+}
+
+#courses-list-modal table {
+    width: 100%;
+}

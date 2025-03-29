@@ -1,0 +1,178 @@
+<div class="row">
+    <!-- Search -->
+    <div class="col-9">
+        <div class="position-relative">
+            <input type="text" class="form-control pr-4" placeholder="name ..." id="search-add-cohort" />
+            <i class="fas fa-search position-absolute"
+                style="top:50%;right:10px;transform:translateY(-50%);color:#6c757d;"
+                aria-hidden="true"
+            ></i>
+        </div>
+    </div>
+    <div class="col-3">
+        <button type="button" class="btn btn-primary" id="btn-search-cohort">{{#str}} search, moodle {{/str}}</button>
+    </div>
+</div>
+<div class="row">
+    <div id="cohorts-list" class="my-2 col-12"></div>
+</div>
+
+<!-- Records Per Page Setting -->
+<div class="form-group row">
+    <label for="recordsPerCohortsPage" class="col-sm-8 col-form-label">{{#str}} recordperpage, local_learningpath {{/str}}</label>
+    <div class="col-sm-4 input-group-sm mb-3">
+        <select id="recordsPerCohortsPage" class="form-control form-select form-control-sm p-0">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+</div>
+
+<script type="module">
+    require(['jquery', 'core/ajax', 'core/str'], function($, ajax, str) {
+        var cohorts = [];
+        var filteredCohorts = [];
+        var recordsPerPage = parseInt($('#recordsPerCohortsPage').val(), 10);
+        var currentPage = 1;
+
+        function fetchCohorts() {
+            ajax.call([{
+                methodname: 'local_learningpath_get_cohorts',
+                args: {},
+            }])[0].done(function(response) {
+                if (response && response.length > 0) {
+                    cohorts = response;
+                    filteredCohorts = cohorts;
+                    displayCohorts();
+                } else {
+                    str.getString('nocohortavailable', 'local_learningpath').then(function(text) {
+                        $('#cohorts-list').html('<p>' + text + '</p>');
+                    });
+                }
+            }).fail(function(error) {
+                console.error('Error fetching cohorts:', error);
+                str.getString('errorcohortavailable', 'local_learningpath').then(function(text) {
+                    $('#cohorts-list').html('<p>' + text + '</p>');
+                });
+            });
+        }
+        fetchCohorts();
+
+        $('#btn-search-cohort').on('click', function(event) {
+            event.preventDefault();
+            var searchText = $('#search-add-cohort').val().toLowerCase();
+            filteredCohorts = cohorts.filter(cohort => cohort.name.toLowerCase().includes(searchText));
+            currentPage = 1;
+            displayCohorts();
+        });
+
+        $('#recordsPerCohortsPage').on('change', function() {
+            recordsPerPage = parseInt($(this).val(), 10);
+            currentPage = 1;
+            displayCohorts();
+        });
+
+        function displayCohorts() {
+            var cohortStart = (currentPage - 1) * recordsPerPage;
+            var cohortEnd = cohortStart + recordsPerPage;
+            var cohortsHtml = '<ul class="list-group">';
+
+            cohortsHtml += filteredCohorts.slice(cohortStart, cohortEnd).map(cohort => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex flex-column ml-2">
+                            <span>${cohort.name}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm add-cohort" data-id="${cohort.id}"></button>
+                </li>
+            `).join('');
+
+            cohortsHtml += '</ul>';
+            $('#cohorts-list').html(cohortsHtml);
+
+            if (filteredCohorts.length > recordsPerPage) {
+                $('#cohorts-list').append(`
+                    <div class="d-flex justify-content-between align-items-center p-2">
+                        <button class="btn btn-secondary btn-sm" id="prevCohortPage" ${currentPage === 1 ? 'disabled' : ''}></button>
+                        <span>${cohortStart + 1} - ${Math.min(cohortEnd, filteredCohorts.length)} of ${filteredCohorts.length}</span>
+                        <button class="btn btn-secondary btn-sm" id="nextCohortPage" ${(cohortEnd >= filteredCohorts.length) ? 'disabled' : ''}></button>
+                    </div>
+                `);
+            }
+
+            // Add cohort button event
+            $('.add-cohort').on('click', function(e) {
+                e.preventDefault();
+                var lpt_id = {{lpt_id}};
+                var cohort_id = $(this).data('id');
+                var button = $(this);
+
+                ajax.call([{
+                    methodname: 'local_learningpath_add_cohort',
+                    args: {
+                        lpt_id: lpt_id,
+                        cohort_id: cohort_id,
+                    },
+                }])[0].done(function() {
+                    button.closest('li').remove();
+                    str.getString('addsuccess', 'local_learningpath').then(alert);
+                }).fail(function() {
+                    str.getString('adderror', 'local_learningpath').then(alert);
+                });
+            });
+
+            // Set button text dynamically using getString
+            str.getString('add', 'local_learningpath').then(function(text) {
+                $('.add-cohort').text(text);
+            });
+            str.getString('previous', 'local_learningpath').then(function(text) {
+                $('#prevCohortPage').text(text);
+            });
+            str.getString('next', 'local_learningpath').then(function(text) {
+                $('#nextCohortPage').text(text);
+            });
+        }
+
+        $(document).on('click', '#prevCohortPage', function(event) {
+            event.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                displayCohorts();
+            }
+        });
+
+        $(document).on('click', '#nextCohortPage', function(event) {
+            event.preventDefault();
+            if ((currentPage * recordsPerPage) < filteredCohorts.length) {
+                currentPage++;
+                displayCohorts();
+            }
+        });
+        /*
+        $(document).on('click', '.add-cohort', function(event) {
+            event.preventDefault();
+            var lpt_id = {{lpt_id}};
+            var cohort_id = $(this).data('id');
+            var button = $(this);
+
+            ajax.call([{
+                methodname: 'local_learningpath_add_cohort',
+                args: {
+                    lpt_id: lpt_id,
+                    cohort_id: cohort_id,
+                },
+            }])[0].done(function() {
+                button.closest('li').remove();
+                str.getString('addsuccess', 'local_learningpath').then(alert);
+            }).fail(function() {
+                str.getString('adderror', 'local_learningpath').then(alert);
+            });
+        });
+        */
+
+        
+    });
+</script>

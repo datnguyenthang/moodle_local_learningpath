@@ -1,0 +1,145 @@
+<div class="row">
+    <!-- Search -->
+    <div class="col-9">
+        <div class="position-relative">
+            <input type="text" class="form-control pr-4" placeholder="Name, Email ..." id="search-add-user" />
+            <i class="fas fa-search position-absolute"
+                style="top:50%;right:10px;transform:translateY(-50%);color:#6c757d;"
+                aria-hidden="true"
+            ></i>
+        </div>
+    </div>
+    <div class="col-3">
+        <button type="button" class="btn btn-primary" id="btn-search-user">{{#str}} search {{/str}}</button>
+    </div>
+</div>
+<div class="row">
+    <div id="users-list" class="my-2 col-12"></div>
+</div>
+<script type="module">
+    require(['jquery', 'core/ajax', 'core/str'], function($, ajax, str) {
+        var users = [];
+        var filteredUsers = [];
+        var recordsPerPage = 20;
+        var currentPage = 1;
+
+        $('#btn-search-user').click(function(e) {
+            e.preventDefault();
+            ajax.call([{
+                methodname: 'local_learningpath_search_users',
+                args: {
+                    search: $('#search-add-user').val(),
+                },
+            }])[0].done(function(response) {
+                if (response && response.length > 0) {
+                    users = response;
+                    filterUsers();
+                } else {
+                    str.get_string('nouseravailable', 'local_learningpath').then(function(text) {
+                        $('#users-list').html('<p>' + text + '</p>');
+                    });
+                }
+            }).fail(function(error) {
+                str.get_string('nouseravailable', 'local_learningpath').then(function(text) {
+                    $('#users-list').html('<p>' + text + '</p>');
+                });
+            });
+        });
+
+        function filterUsers() {
+            filteredUsers = users;
+            currentPage = 1;
+            displayUsers();
+        }
+
+        function displayUsers() {
+            var userStart = (currentPage - 1) * recordsPerPage;
+            var userEnd = userStart + recordsPerPage;
+
+            // Fetch all necessary translated strings before rendering the UI
+            Promise.all([
+                str.get_string('add', 'local_learningpath'),
+                str.get_string('previous', 'local_learningpath'),
+                str.get_string('next', 'local_learningpath'),
+                str.get_string('addsuccess', 'local_learningpath'),
+                str.get_string('adderror', 'local_learningpath')
+            ]).then(([addText, prevText, nextText, addSuccessText, addErrorText]) => {
+                var usersHtml = '<ul class="list-group">';
+                usersHtml += filteredUsers.slice(userStart, userEnd).map(user => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="${user.profileimageurl}" class="rounded-circle" width="40" height="40" />
+                            <div class="d-flex flex-column ml-2">
+                                <span>${user.fullname}</span>
+                                <small class="text-muted">${user.email}</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm add-user" data-id="${user.id}">${addText}</button>
+                    </li>
+                `).join('');
+                usersHtml += '</ul>';
+                $('#users-list').html(usersHtml);
+
+                if (filteredUsers.length > recordsPerPage) {
+                    $('#users-list').append(`
+                        <div class="d-flex justify-content-between align-items-center p-2">
+                            <button class="btn btn-secondary btn-sm" id="prevUserPage" ${currentPage === 1 ? 'disabled' : ''}>${prevText}</button>
+                            <span>${userStart + 1} - ${Math.min(userEnd, filteredUsers.length)} of ${filteredUsers.length}</span>
+                            <button class="btn btn-secondary btn-sm" id="nextUserPage" ${userEnd >= filteredUsers.length ? 'disabled' : ''}>${nextText}</button>
+                        </div>
+                    `);
+                }
+
+                // Add click event for select buttons
+                $('.add-user').click(function(e) {
+                    e.preventDefault();
+                    var lpt_id = {{lpt_id}};
+                    var u_id = $(this).data('id');
+                    var button = $(this);
+                    ajax.call([{
+                        methodname: 'local_learningpath_add_user',
+                        args: {
+                            lpt_id: lpt_id,
+                            u_id: u_id,
+                        },
+                    }])[0].done(function(response) {
+                        button.closest('li').remove();
+                        alert(addSuccessText);
+                    }).fail(function(error) {
+                        alert(addErrorText);
+                    });
+                });
+
+            }).catch(error => {
+                console.error('Error fetching strings:', error);
+            });
+        }
+
+        // Pagination functions
+        function prevUserPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayUsers();
+            }
+        }
+
+        function nextUserPage() {
+            if ((currentPage * recordsPerPage) < filteredUsers.length) {
+                currentPage++;
+                displayUsers();
+            }
+        }
+
+        // Add click event for pagination buttons
+        $(document).on('click', '#prevUserPage', function(event) {
+            event.preventDefault();
+            prevUserPage();
+        });
+
+        $(document).on('click', '#nextUserPage', function(event) {
+            event.preventDefault();
+            nextUserPage();
+        });
+
+    });
+</script>
